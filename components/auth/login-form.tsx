@@ -29,7 +29,7 @@ import {
 
 import { CardWrapper } from "./card-wrapper";
 import { login } from "@/actions/login"; // Ensure login action returns user data
-import { getUserByEmail } from "@/data/user"; // Fetch userId based on email
+//import { getUserByEmail } from "@/data/user"; // Fetch userId based on email
 
 export const LoginForm = () => {
   const [error, setError] = useState<string | undefined>(""); 
@@ -64,7 +64,7 @@ const onSubmit = async (values: z.infer<typeof LoginSchema>) => {
         // Redirect manually after storage
         window.location.href = DEFAULT_LOGIN_REDIRECT;
       }
-    } catch (err) {
+    } catch  {
       setError("Something went wrong!");
     }
   });
