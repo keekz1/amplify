@@ -9,66 +9,15 @@ generator client {
   provider = "prisma-client-js"
 }
 
-enum UserRole {
-  ADMIN
-  USER
-}
-
 model User {
-  id                     String         @id @default(cuid()) @map("_id")
-  name                   String
-  email                  String         @unique  // Unique constraint for email
-  emailVerified          DateTime?
-  image                  String?
-  password               String?
-  role                   UserRole       @default(USER)
-  
-  // Minimal reference-based relations
-  friendRequestsSent     String[]       // Store only the IDs
-  friendRequestsReceived String[]       // Store only the IDs
-  friendships            String[]       // Store only the IDs
-  messagesSent           String[]       // Store only the IDs
-  messagesReceived       String[]       // Store only the IDs
+  id               String   @id @default(cuid()) @map("_id")
+  name             String?
+  email            String?  @unique 
+  emailVerified    DateTime?
+  image            String?
+  password         String?
+  accounts         Account[]
 }
-
-// Remove any duplicate or unnecessary composite indexes
-model Friendship {
-  id        String   @id @default(cuid()) @map("_id")
-  userAId   String
-  userBId   String
-  createdAt DateTime @default(now())
-
-  // Provide distinct relation names for userA and userB
-  userA     User     @relation("UserAFriendship", fields: [userAId], references: [id])
-  userB     User     @relation("UserBFriendship", fields: [userBId], references: [id])
-
-  @@unique([userAId, userBId])  // Ensure uniqueness of the pair
-}
-
-
-model FriendRequest {
-  id          String   @id @default(cuid()) @map("_id")
-  senderId    String
-  receiverId  String
-  status      String   // "pending", "accepted", or "rejected"
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  sender      User     @relation("Sender", fields: [senderId], references: [id])
-  receiver    User     @relation("Receiver", fields: [receiverId], references: [id])
-
-  // Remove redundant index
-  // @@index([senderId, receiverId]) // Remove if unnecessary
-}
-
-model Message {
-  id        Int    @id @default(autoincrement())
-  senderId  Int
-  receiverId Int
-  sender    User   @relation("MessagesSent", fields: [senderId], references: [id])
-  receiver  User   @relation("MessagesReceived", fields: [receiverId], references: [id])
-}
-
 
 model Account {
   id                 String   @id @default(cuid()) @map("_id")
@@ -87,10 +36,4 @@ model Account {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
-}
-
-enum MessageStatus {
-  SENDING
-  SENT
-  FAILED
 }
