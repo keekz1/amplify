@@ -1,14 +1,10 @@
-@import "tailwindcss/preflight"; /* Replaces @tailwind base in Tailwind v4 */
-
-@plugin "tailwindcss-animate"; /* Custom Tailwind plugin for animations */
 
 @custom-variant dark (&:is(.dark *));
 
-@tailwind utilities;
 
 @import "tailwindcss";
 
-@tailwind utilities;
+
 
 
 @custom-variant dark (&:is(.dark *));
