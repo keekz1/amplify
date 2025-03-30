@@ -1,9 +1,7 @@
 @import "tailwindcss";
-@import "tailwindcss/preflight";  /* Replaces @tailwind base */
 
 /* For utility classes */
 
-@tailwind utilities;
 
 
 @custom-variant dark (&:is(.dark *));
