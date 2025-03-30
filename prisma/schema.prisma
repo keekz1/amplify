@@ -1,35 +1,103 @@
+// prisma/schema.prisma
+
 datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["mongoDb"]
-  binaryTargets   = ["linux-musl"]
+  provider = "prisma-client-js"
 }
 
-// Simplified User model using embedded documents
+enum UserRole {
+  ADMIN
+  USER
+}
+
 model User {
-  id             String         @id @default(auto()) @map("_id") @db.ObjectId
-  email          String         @unique
-  friendRequests FriendRequest[] @relation("FriendRequests")
-  messages       Message[]      @relation("Messages")
-  @@index([email])
+  id                     String         @id @default(cuid()) @map("_id")
+  name                   String
+  email                  String         @unique  // Unique constraint for email
+  emailVerified          DateTime?
+  image                  String?
+  password               String?
+  role                   UserRole       @default(USER)
+  
+  // Minimal reference-based relations
+  friendRequestsSent     String[]       // Store only the IDs
+  friendRequestsReceived String[]       // Store only the IDs
+  friendships            String[]       // Store only the IDs
+  messagesSent           String[]       // Store only the IDs
+  messagesReceived       String[]       // Store only the IDs
 }
 
-model Message {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  content   String
-  sender    User     @relation(fields: [senderId], references: [id])
-  senderId  String   @db.ObjectId
-  @@index([senderId])
+// Remove any duplicate or unnecessary composite indexes
+model Friendship {
+  id       String   @id @default(cuid()) @map("_id")
+  userAId  String
+  userBId  String
+  createdAt DateTime @default(now())
+
+  userA    User     @relation(fields: [userAId], references: [id])
+  userB    User     @relation(fields: [userBId], references: [id])
+
+  // Ensure that there is no duplicate unique constraint
+  @@unique([userAId, userBId])  // Composite unique constraint
+
+  // Remove unnecessary @@index if it's already handled by the unique constraint
 }
 
 model FriendRequest {
-  id       String   @id @default(auto()) @map("_id") @db.ObjectId
-  sender   User     @relation(fields: [senderId], references: [id])
-  senderId String   @db.ObjectId
-  status   String   @default("pending")
-  @@index([senderId])
+  id          String   @id @default(cuid()) @map("_id")
+  senderId    String
+  receiverId  String
+  status      String   // "pending", "accepted", or "rejected"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  sender      User     @relation("Sender", fields: [senderId], references: [id])
+  receiver    User     @relation("Receiver", fields: [receiverId], references: [id])
+
+  // Remove redundant index
+  // @@index([senderId, receiverId]) // Remove if unnecessary
+}
+
+model Message {
+  id          String   @id @default(cuid()) @map("_id")
+  senderId    String
+  receiverId  String
+  text        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  status      MessageStatus @default(SENDING)
+
+  sender      User     @relation("MessagesSent", fields: [senderId], references: [id])
+  receiver    User     @relation("MessagesReceived", fields: [receiverId], references: [id])
+
+  @@index([senderId, receiverId])  // Index for better performance on lookups
+}
+
+model Account {
+  id                 String   @id @default(cuid()) @map("_id")
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?
+  access_token       String?
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+enum MessageStatus {
+  SENDING
+  SENT
+  FAILED
 }
