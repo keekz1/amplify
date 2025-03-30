@@ -26,6 +26,7 @@
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "critters": "^0.0.23",
     "D": "^1.0.0",
     "firebase": "^11.5.0",
     "firebase-admin": "^13.2.0",

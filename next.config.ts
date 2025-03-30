@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
     return config;
   },
   experimental: {
-    optimizeCss: true,
+    optimizeCss: false,  // Disable CSS optimization (critters)
   },
 };
 
