@@ -33,19 +33,18 @@ model User {
 
 // Remove any duplicate or unnecessary composite indexes
 model Friendship {
-  id       String   @id @default(cuid()) @map("_id")
-  userAId  String
-  userBId  String
+  id        String   @id @default(cuid()) @map("_id")
+  userAId   String
+  userBId   String
   createdAt DateTime @default(now())
 
-  userA    User     @relation(fields: [userAId], references: [id])
-  userB    User     @relation(fields: [userBId], references: [id])
+  // Provide distinct relation names for userA and userB
+  userA     User     @relation("UserAFriendship", fields: [userAId], references: [id])
+  userB     User     @relation("UserBFriendship", fields: [userBId], references: [id])
 
-  // Ensure that there is no duplicate unique constraint
-  @@unique([userAId, userBId])  // Composite unique constraint
-
-  // Remove unnecessary @@index if it's already handled by the unique constraint
+  @@unique([userAId, userBId])  // Ensure uniqueness of the pair
 }
+
 
 model FriendRequest {
   id          String   @id @default(cuid()) @map("_id")
