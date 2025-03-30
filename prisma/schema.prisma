@@ -62,19 +62,13 @@ model FriendRequest {
 }
 
 model Message {
-  id          String   @id @default(cuid()) @map("_id")
-  senderId    String
-  receiverId  String
-  text        String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  status      MessageStatus @default(SENDING)
-
-  sender      User     @relation("MessagesSent", fields: [senderId], references: [id])
-  receiver    User     @relation("MessagesReceived", fields: [receiverId], references: [id])
-
-  @@index([senderId, receiverId])  // Index for better performance on lookups
+  id        Int    @id @default(autoincrement())
+  senderId  Int
+  receiverId Int
+  sender    User   @relation("MessagesSent", fields: [senderId], references: [id])
+  receiver  User   @relation("MessagesReceived", fields: [receiverId], references: [id])
 }
+
 
 model Account {
   id                 String   @id @default(cuid()) @map("_id")
