@@ -5,51 +5,31 @@ datasource db {
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["filtering", "mongoDb"] // Add crucial preview features
+  previewFeatures = ["mongoDb", "filtering"]
+  binaryTargets   = ["linux-musl"]
 }
 
-enum UserRole {
-  ADMIN
-  USER
-}
-
+// Simplified User model using embedded documents
 model User {
-  id              String         @id @default(auto()) @map("_id") @db.ObjectId
-  name            String
-  email           String         @unique
-  emailVerified   DateTime?
-  image           String?
-  password        String?
-  role            UserRole       @default(USER)
-  // Simplify relations using embedded documents
-  friendRequests  FriendRequest[]
-  friends         String[]       @db.Array(ObjectId)
-  messages        Message[]
-  accounts        Account[]
+  id             String         @id @default(auto()) @map("_id") @db.ObjectId
+  email          String         @unique
+  friendRequests FriendRequest[] @relation("FriendRequests")
+  messages       Message[]      @relation("Messages")
+  @@index([email])
 }
 
 model Message {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  text      String
+  content   String
   sender    User     @relation(fields: [senderId], references: [id])
   senderId  String   @db.ObjectId
-  createdAt DateTime @default(now())
-}
-
-model Account {
-  id                String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId            String   @db.ObjectId
-  type              String
-  provider          String
-  providerAccountId String
-  user              User     @relation(fields: [userId], references: [id])
-  @@unique([provider, providerAccountId])
+  @@index([senderId])
 }
 
 model FriendRequest {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  sender     User     @relation(fields: [senderId], references: [id])
-  senderId   String   @db.ObjectId
-  status     String   @default("pending")
-  createdAt  DateTime @default(now())
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  sender   User     @relation(fields: [senderId], references: [id])
+  senderId String   @db.ObjectId
+  status   String   @default("pending")
+  @@index([senderId])
 }
