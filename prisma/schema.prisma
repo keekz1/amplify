@@ -4,85 +4,52 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["filtering", "mongoDb"] // Add crucial preview features
 }
 
-enum UserRole{
+enum UserRole {
   ADMIN
   USER
 }
 
 model User {
-  id                     String         @id @default(cuid()) @map("_id")
-  name                   String
-  email                  String         @unique
-  emailVerified          DateTime?
-  image                  String?
-  password               String?
-  role                   UserRole       @default(USER)
-  friendRequestsSent     FriendRequest[] @relation("Sender")
-  friendRequestsReceived FriendRequest[] @relation("Receiver")
-  accounts               Account[]
-  friendshipsAsUserA     Friendship[]   @relation("Friendship_userA")
-  friendshipsAsUserB     Friendship[]   @relation("Friendship_userB")
-  
-  // Add these fields to complete the Message relation
-  messagesSent           Message[]      @relation("MessagesSent")
-  messagesReceived       Message[]      @relation("MessagesReceived")
-}
-
-
-model Friendship {
-  id       String @id @default(cuid()) @map("_id")
-  userAId  String
-  userBId  String
-  userA    User   @relation("Friendship_userA", fields: [userAId], references: [id])
-  userB    User   @relation("Friendship_userB", fields: [userBId], references: [id])
-  createdAt DateTime @default(now())
-
-  // Ensure uniqueness to prevent duplicate friendships
-  @@unique([userAId, userBId])
-}
-
-model FriendRequest {
-  id          String   @id @default(cuid()) @map("_id")
-  senderId    String
-  receiverId  String
-  status      String   // "pending", "accepted", or "rejected"
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  sender      User     @relation("Sender", fields: [senderId], references: [id])
-  receiver    User     @relation("Receiver", fields: [receiverId], references: [id])
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  email           String         @unique
+  emailVerified   DateTime?
+  image           String?
+  password        String?
+  role            UserRole       @default(USER)
+  // Simplify relations using embedded documents
+  friendRequests  FriendRequest[]
+  friends         String[]       @db.Array(ObjectId)
+  messages        Message[]
+  accounts        Account[]
 }
 
 model Message {
-  id          String   @id @default(cuid()) @map("_id")
-  senderId    String
-  receiverId  String
-  text        String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  status      String   @default("sending") // Add this field for message status
-
-  sender      User     @relation("MessagesSent", fields: [senderId], references: [id])
-  receiver    User     @relation("MessagesReceived", fields: [receiverId], references: [id])
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  text      String
+  sender    User     @relation(fields: [senderId], references: [id])
+  senderId  String   @db.ObjectId
+  createdAt DateTime @default(now())
 }
 
 model Account {
-  id                 String   @id @default(cuid()) @map("_id")
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?
-  access_token       String?
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?
-  session_state      String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String   @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String
+  user              User     @relation(fields: [userId], references: [id])
   @@unique([provider, providerAccountId])
+}
+
+model FriendRequest {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  sender     User     @relation(fields: [senderId], references: [id])
+  senderId   String   @db.ObjectId
+  status     String   @default("pending")
+  createdAt  DateTime @default(now())
 }
