@@ -1,9 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 
-// Add ESLint exception for global declaration
-// eslint-disable-next-line no-var
 declare global {
-  var prisma: PrismaClient | undefined;
+  // eslint-disable-next-line no-var
+  var prisma: PrismaClient | undefined; // <-- Move comment HERE
 }
 
 export const prisma = globalThis.prisma || new PrismaClient();
