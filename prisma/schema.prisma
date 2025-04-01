@@ -19,11 +19,12 @@ model User {
   email         String     @unique
   emailVerified DateTime?
   image         String?
-  password      String?
+  pas sword      String?
   role          UserRole   @default(USER)
 
-  accounts      Account[]  // 🔹 Add this to establish a bidirectional relation
+  accounts      Account[]  // 🔥 Add this line to complete the relation
 }
+
 
 model Account {
   id                 String   @id @default(cuid()) @map("_id")
@@ -40,6 +41,5 @@ model Account {
   session_state      String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
   @@unique([provider, providerAccountId])
 }
