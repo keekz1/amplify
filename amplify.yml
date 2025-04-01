@@ -1,19 +1,19 @@
-version: 1
 backend:
   phases:
     build:
       commands:
-        - npm install
+        - NODE_OPTIONS="--max-old-space-size=4096" npm install
         - npx prisma generate
         - npx prisma db push
+
 frontend:
   phases:
     preBuild:
       commands:
-        - npm install
+        - NODE_OPTIONS="--max-old-space-size=4096" npm install
     build:
       commands:
-        - npm run build
+        - NODE_OPTIONS="--max-old-space-size=4096" npm run build
   artifacts:
     baseDirectory: .next
     files:
