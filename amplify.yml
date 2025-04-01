@@ -3,7 +3,7 @@ backend:
   phases:
     build:
       commands:
-        # Increase memory limit to avoid crashes
+        # Increase memory limit
         - export NODE_OPTIONS="--max-old-space-size=8192"
         
         # Generate Prisma client early
@@ -12,8 +12,12 @@ backend:
         # Install dependencies with minimal resource usage
         - npm ci --no-audit --prefer-offline --ignore-scripts
         
-        # Apply schema changes (Use db push if not using migrations)
+        # Apply database migrations
         - npx prisma migrate deploy || npx prisma db push
+  artifacts:
+    baseDirectory: backend
+    files:
+      - '**/*'
 
 frontend:
   phases:
@@ -24,13 +28,16 @@ frontend:
       commands:
         - export NODE_OPTIONS="--max-old-space-size=8192"
         
-        # Clean up unnecessary cache files to free up memory
+        # Clean cache to free memory
         - rm -rf .next .swc node_modules/.cache
         
-        # Build Next.js frontend with limited threads to prevent memory overflow
+        # Build Next.js frontend
         - node --max-old-space-size=8192 ./node_modules/next/dist/bin/next build
-
-cache:
-  paths:
-    - .next/cache/**/*
-    - node_modules/.prisma/client/**/*
+  artifacts:
+    baseDirectory: .next
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - .next/cache/**/*
+      - node_modules/.prisma/client/**/*
